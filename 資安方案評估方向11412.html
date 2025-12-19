@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業資安防禦體系互動指南</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Corporate Trust Blue & Alert Amber -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9', // Sky blue
+                            600: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        alert: {
+                            500: '#f59e0b', // Amber
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Container Styling - Critical for Responsiveness */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width to prevent stretching on large screens */
+            height: 350px;    /* Base height */
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Card Hover Effects */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Fade In Animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans leading-relaxed">
+
+    <!-- Application Structure Plan:
+         1. Header/Hero: Sets the context "From Antivirus to Detection & Response".
+         2. Planning Section (Grid): Interactive cards for the 4 pillars (Risk, Compliance, HR, Coverage).
+         3. Solution Arsenal (Split View): Left tabs for EDR/NDR/etc., Right content + Radar Chart.
+         4. Comparison Matrix (Table): Clean comparison of roles.
+         5. Scenario Wizard (Interactive Form): User selects situation -> System outputs specific advice.
+         6. FAQ/Objection Handling (Accordion): "Firewall vs SOC" logic.
+    -->
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🛡️</span>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">企業資安防禦指南</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#planning" class="text-slate-600 hover:text-brand-600 font-medium transition">規劃考量</a>
+                    <a href="#solutions" class="text-slate-600 hover:text-brand-600 font-medium transition">核心方案</a>
+                    <a href="#wizard" class="text-slate-600 hover:text-brand-600 font-medium transition">情境推薦</a>
+                    <a href="#faq" class="text-slate-600 hover:text-brand-600 font-medium transition">常見問答</a>
+                </div>
+                <!-- Mobile Menu Button (Simplified) -->
+                <button class="md:hidden text-slate-600" onclick="alert('請使用桌面版以獲得最佳體驗')">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-b from-brand-50 to-white pt-16 pb-12 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
+                資安不只是防毒，而是<span class="text-brand-600 relative inline-block">偵測、分析、回應<span class="absolute bottom-0 left-0 w-full h-2 bg-brand-200 opacity-50 -z-10"></span></span>
+            </h1>
+            <p class="text-xl text-slate-600 max-w-3xl mx-auto mb-10">
+                現代攻擊多為帳號被盜、行為異常與橫向移動。協助企業從戰略層面規劃資安架構，建立完整的防禦體系，確保當攻擊發生時能第一時間止血。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#wizard" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 shadow-lg transition hover:-translate-y-1">
+                    🚀 立即進行情境評估
+                </a>
+                <a href="#solutions" class="inline-flex items-center justify-center px-8 py-3 border border-slate-300 text-base font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition">
+                    📖 了解核心名詞
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- SECTION 1: Planning Pillars -->
+        <section id="planning" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">一、導入資安的四大規劃考量</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    在採購任何工具之前，請先評估以下四個面向，避免盲目投資。點擊卡片查看詳細思考點。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Pillar 1 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover-lift cursor-pointer group" onclick="togglePillar(this)">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🎯</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">風險識別與資產</h3>
+                    <p class="text-sm text-slate-500 mb-4">Risk & Asset</p>
+                    <div class="hidden-content hidden text-slate-600 text-sm border-t border-slate-100 pt-4 space-y-2 fade-in">
+                        <p><strong>• 關鍵資產：</strong>產線(OT)、客戶資料(CRM)或智慧財產(IP)？</p>
+                        <p><strong>• 最怕什麼：</strong>產線停擺、個資外洩或勒索軟體鎖檔？</p>
+                    </div>
+                    <button class="text-brand-600 text-sm font-medium mt-2 group-hover:underline toggle-btn">展開詳情 ▼</button>
+                </div>
+
+                <!-- Pillar 2 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover-lift cursor-pointer group" onclick="togglePillar(this)">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">⚖️</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">合規與法遵</h3>
+                    <p class="text-sm text-slate-500 mb-4">Compliance</p>
+                    <div class="hidden-content hidden text-slate-600 text-sm border-t border-slate-100 pt-4 space-y-2 fade-in">
+                        <p><strong>• 標準認證：</strong>ISO 27001、TISAX 或金融監理？</p>
+                        <p><strong>• 紀錄留存：</strong>是否有特定的日誌(Log)保存年限要求？</p>
+                    </div>
+                    <button class="text-brand-600 text-sm font-medium mt-2 group-hover:underline toggle-btn">展開詳情 ▼</button>
+                </div>
+
+                <!-- Pillar 3 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover-lift cursor-pointer group" onclick="togglePillar(this)">
+                    <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">👥</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">維運人力</h3>
+                    <p class="text-sm text-slate-500 mb-4">Human Resources</p>
+                    <div class="hidden-content hidden text-slate-600 text-sm border-t border-slate-100 pt-4 space-y-2 fade-in">
+                        <p><strong>• 監控能力：</strong>是否有 24/7 輪班人力？</p>
+                        <p><strong>• 判讀能力：</strong>IT 能分辨誤報嗎？</p>
+                        <p class="text-alert-500 font-bold">⚠️ 人力不足請優先考慮 MDR。</p>
+                    </div>
+                    <button class="text-brand-600 text-sm font-medium mt-2 group-hover:underline toggle-btn">展開詳情 ▼</button>
+                </div>
+
+                <!-- Pillar 4 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover-lift cursor-pointer group" onclick="togglePillar(this)">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🔭</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">偵測範圍</h3>
+                    <p class="text-sm text-slate-500 mb-4">Coverage</p>
+                    <div class="hidden-content hidden text-slate-600 text-sm border-t border-slate-100 pt-4 space-y-2 fade-in">
+                        <p><strong>• 防禦邊界：</strong>只看防火牆夠嗎？</p>
+                        <p><strong>• 盲點：</strong>遠端辦公(VPN)、IoT 設備是否有被監控？</p>
+                    </div>
+                    <button class="text-brand-600 text-sm font-medium mt-2 group-hover:underline toggle-btn">展開詳情 ▼</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Solution Arsenal & Visualization -->
+        <!-- Visualization & Content Choices:
+             Goal: Explain complex acronyms (EDR, NDR, XDR, etc.) clearly.
+             Method: Interactive Tab + Radar Chart.
+             Interaction: Clicking a solution updates the description and the chart.
+             Chart Logic: Radar chart showing capabilities (Endpoint, Network, Human Service, Integration) to visually differentiate tools (e.g., EDR vs XDR vs MDR).
+             Justification: Text alone is dry; visual comparison helps understand "Scope" and "Service level".
+        -->
+        <section id="solutions" class="scroll-mt-24 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+            <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                <h2 class="text-3xl font-bold text-slate-900">二、核心資安名詞白話解析</h2>
+                <p class="text-slate-600 mt-2">將複雜的技術名詞轉化為生活化的「保全系統」比喻。點擊左側項目查看分析。</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row min-h-[600px]">
+                <!-- Left Sidebar: Tabs -->
+                <div class="w-full lg:w-1/3 bg-slate-50 border-r border-slate-200 overflow-y-auto max-h-[400px] lg:max-h-none">
+                    <div class="flex flex-col" id="solution-tabs">
+                        <!-- Buttons injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Right Content: Detail & Chart -->
+                <div class="w-full lg:w-2/3 p-6 lg:p-10 flex flex-col">
+                    <div id="solution-detail" class="mb-8 fade-in">
+                        <!-- Content injected via JS -->
+                    </div>
+
+                    <div class="flex-grow flex items-center justify-center bg-white rounded-xl border border-slate-100 p-4 shadow-inner relative">
+                        <div class="absolute top-2 left-2 text-xs text-slate-400 font-mono">CAPABILITY_RADAR_V1.0</div>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-slate-400 mt-2">* 圖表數值為概念示意，旨在呈現功能側重差異</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Comparison Matrix -->
+        <section class="scroll-mt-24">
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">三、快速比較表</h2>
+            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200 bg-white">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">名詞</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">角色類型</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">核心價值</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">適合誰？</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-slate-900">EDR</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">工具</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">防勒索軟體、單機防禦</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">所有企業的基本標配</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-slate-900">NDR</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">工具</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">監控網路行為、保護 IoT/OT</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">有機房、產線、無法裝軟體者</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-purple-600">XDR</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">平台</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">跨維度整合、減少誤判</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">追求效率、想簡化管理者</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-slate-900">SIEM</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">平台</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">合規稽核、大數據日誌保存</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">金融、政府、需法遵查核</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-slate-900">SOC</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-800">組織</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">全面監控與事故應變</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">大型企業</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-alert-500">MDR</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">服務</span></td>
+                            <td class="px-6 py-4 text-sm text-slate-600">解決人力缺口、專家回應</td>
+                            <td class="px-6 py-4 text-sm text-slate-600">IT 人力有限，想外包專業者</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Scenario Wizard -->
+        <section id="wizard" class="scroll-mt-24">
+            <div class="bg-slate-900 rounded-2xl p-8 lg:p-12 text-white shadow-2xl overflow-hidden relative">
+                <!-- Decorative background elements -->
+                <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-brand-500 rounded-full opacity-10 blur-3xl"></div>
+                
+                <div class="relative z-10 grid md:grid-cols-2 gap-12">
+                    <!-- Left: Questions -->
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+                            <span class="bg-brand-500 rounded-lg p-1 text-2xl">🧞‍♂️</span> 情境推薦精靈
+                        </h2>
+                        <p class="text-slate-300 mb-8">
+                            請選擇您目前面臨的「最大痛點」或「企業型態」，系統將為您推薦最適合的防禦組合。
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition border border-transparent hover:border-brand-500 group">
+                                <input type="radio" name="scenario" value="ot" class="w-5 h-5 text-brand-500 focus:ring-brand-500" onchange="updateRecommendation()">
+                                <div class="ml-4">
+                                    <span class="block font-bold text-lg group-hover:text-brand-400">製造業 / 工控環境 (OT)</span>
+                                    <span class="text-sm text-slate-400">機台無法安裝軟體，產線不能停</span>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-center p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition border border-transparent hover:border-brand-500 group">
+                                <input type="radio" name="scenario" value="manpower" class="w-5 h-5 text-brand-500 focus:ring-brand-500" onchange="updateRecommendation()">
+                                <div class="ml-4">
+                                    <span class="block font-bold text-lg group-hover:text-brand-400">IT 人力不足 / 無專職資安</span>
+                                    <span class="text-sm text-slate-400">沒有人能 24 小時輪班監控警報</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition border border-transparent hover:border-brand-500 group">
+                                <input type="radio" name="scenario" value="compliance" class="w-5 h-5 text-brand-500 focus:ring-brand-500" onchange="updateRecommendation()">
+                                <div class="ml-4">
+                                    <span class="block font-bold text-lg group-hover:text-brand-400">高度合規需求 (金融/政府)</span>
+                                    <span class="text-sm text-slate-400">需保存長期日誌以備稽核</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-4 bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-700 transition border border-transparent hover:border-brand-500 group">
+                                <input type="radio" name="scenario" value="ransomware" class="w-5 h-5 text-brand-500 focus:ring-brand-500" onchange="updateRecommendation()">
+                                <div class="ml-4">
+                                    <span class="block font-bold text-lg group-hover:text-brand-400">害怕勒索軟體 (基本防護)</span>
+                                    <span class="text-sm text-slate-400">最擔心檔案被加密鎖死</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Right: Recommendation Output -->
+                    <div class="flex items-center justify-center">
+                        <div id="recommendation-card" class="bg-white text-slate-800 rounded-2xl p-8 w-full shadow-2xl text-center transform transition-all duration-500 opacity-50 scale-95 blur-sm">
+                            <div class="text-6xl mb-6" id="rec-icon">🤔</div>
+                            <h3 class="text-2xl font-bold mb-2" id="rec-title">請選擇左側情境</h3>
+                            <div class="h-1 w-16 bg-brand-500 mx-auto mb-6 rounded-full"></div>
+                            
+                            <p class="text-slate-600 mb-8" id="rec-desc">系統將分析您的需求並提供專家建議。</p>
+                            
+                            <div class="bg-brand-50 p-6 rounded-xl border border-brand-100">
+                                <span class="text-xs font-bold text-brand-600 tracking-wider uppercase mb-1 block">推薦最佳組合</span>
+                                <span class="text-2xl font-extrabold text-slate-900 block" id="rec-result">---</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: FAQ Accordion -->
+        <section id="faq" class="scroll-mt-24 pb-12">
+            <h2 class="text-3xl font-bold text-slate-900 mb-8 text-center">常見問題與業務應答</h2>
+            <div class="max-w-3xl mx-auto space-y-4">
+                <!-- Q1 -->
+                <div class="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-slate-50 transition" onclick="toggleFaq(this)">
+                        <span class="font-bold text-lg text-slate-800">❓ 「我們有防火牆，還需要 SOC 嗎？」</span>
+                        <span class="text-slate-400 text-xl transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="hidden px-6 py-5 bg-slate-50 border-t border-slate-100 text-slate-600 leading-relaxed">
+                        <p><strong>標準回應：</strong>「防火牆是門，SOC 是看門的人。沒有人看，門有沒有被翻過去你不一定知道。」</p>
+                        <p class="mt-2 text-sm">防火牆只能阻擋規則內的攻擊，對於繞過防火牆後的內部橫向移動或異常行為，需要 SOC 進行持續監控與分析。</p>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-slate-50 transition" onclick="toggleFaq(this)">
+                        <span class="font-bold text-lg text-slate-800">❓ 「SOC 是不是很貴？」</span>
+                        <span class="text-slate-400 text-xl transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="hidden px-6 py-5 bg-slate-50 border-t border-slate-100 text-slate-600 leading-relaxed">
+                        <p><strong>標準回應：</strong>「自己建 SOC 很貴（需軟硬體+24/7輪班人力），但用 <strong>MDR (代管服務)</strong> 的方式，把 SOC 外包，成本就會低很多。」</p>
+                        <p class="mt-2 text-sm">MDR 讓中小企業也能享有大企業等級的資安監控，且只需負擔服務費用。</p>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm">
+                    <button class="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-slate-50 transition" onclick="toggleFaq(this)">
+                        <span class="font-bold text-lg text-slate-800">❓ 「SOC 會不會管太多，影響正常運作？」</span>
+                        <span class="text-slate-400 text-xl transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="hidden px-6 py-5 bg-slate-50 border-t border-slate-100 text-slate-600 leading-relaxed">
+                        <p><strong>標準回應：</strong>「SOC 只在事件發生時介入，平常只是監控與提醒，不會影響正常運作。」</p>
+                        <p class="mt-2 text-sm">專業的 SOC 團隊會調校規則以減少誤報，確保只有真正的威脅才會觸發應變流程。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Closing Statement -->
+            <div class="mt-16 text-center">
+                <blockquote class="text-2xl font-serif italic text-slate-600 max-w-4xl mx-auto border-t border-b border-slate-200 py-8">
+                    「防火牆是門，SOC 是看門的人。沒有人看，門被翻過去了您也不會知道。」
+                    <footer class="mt-4 text-sm font-sans text-slate-400 not-italic">— 給決策者的最後建議</footer>
+                </blockquote>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-2 font-bold text-white tracking-wide">企業資安防禦體系導入指南</p>
+            <p class="text-sm opacity-70">Generated based on Cybersecurity Implementation Report</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Planning Pillars Logic ---
+        function togglePillar(element) {
+            const content = element.querySelector('.hidden-content');
+            const btn = element.querySelector('.toggle-btn');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                btn.textContent = '收起內容 ▲';
+            } else {
+                content.classList.add('hidden');
+                btn.textContent = '展開詳情 ▼';
+            }
+        }
+
+        // --- 2. Solution Arsenal Logic (Data & Charts) ---
+        const solutionData = [
+            {
+                id: 'EDR',
+                icon: '🖥️',
+                name: 'EDR 端點偵測',
+                def: '端點偵測與回應 (Endpoint Detection & Response)',
+                analogy: '監視器與自動警衛',
+                desc: '監控電腦、伺服器上的行為。如果發現程式在異常加密檔案（勒索行為），立即阻擋。',
+                memory: '🛡️ 看「每一台電腦」在幹嘛',
+                radar: [9, 2, 4, 8, 2] // Endpoint, Network, Integration, Response, Human
+            },
+            {
+                id: 'NDR',
+                icon: '🌐',
+                name: 'NDR 網路偵測',
+                def: '網路偵測與回應 (Network Detection & Response)',
+                analogy: '走廊上的紅外線感測器',
+                desc: '分析網路流量。不需要在設備裝軟體，適合保護無法裝軟體的印表機、醫療設備或產線機台。',
+                memory: '📡 看「網路空間」有什麼可疑移動',
+                radar: [2, 9, 4, 6, 2]
+            },
+            {
+                id: 'XDR',
+                icon: '🧩',
+                name: 'XDR 延伸偵測',
+                def: '延伸式偵測與回應 (Extended Detection & Response)',
+                analogy: '連動式保全系統',
+                desc: '將 EDR、NDR、郵件等整合。當駭客從郵件進入、在網路移動、最後攻擊電腦，XDR 能串成完整故事。',
+                memory: '🧠 跨系統「整合在一起看」全貌',
+                radar: [9, 9, 10, 9, 4]
+            },
+            {
+                id: 'SIEM',
+                icon: '📊',
+                name: 'SIEM 事件管理',
+                def: '資安資訊與事件管理 (Security Information & Event Management)',
+                analogy: '黑盒子與超級日誌庫',
+                desc: '收集所有設備的日誌，進行關聯分析，供稽核或事故調查使用。',
+                memory: '💾 資安的「大腦與歷史紀錄庫」',
+                radar: [5, 5, 9, 3, 3] // High integration/analysis, low auto-response
+            },
+            {
+                id: 'SOC',
+                icon: '👨‍💻',
+                name: 'SOC 監控中心',
+                def: '資安監控中心 (Security Operations Center)',
+                analogy: '119 / 110 指揮中心',
+                desc: '結合了「人、流程、工具」。由專業人員透過 SIEM 或 XDR 平台，24/7 監控全球威脅並隨時應變。',
+                memory: '🚨 資安界的「戰情監控室」',
+                radar: [6, 6, 8, 10, 10] // High human & response
+            },
+            {
+                id: 'MDR',
+                icon: '⏰',
+                name: 'MDR 代管服務',
+                def: '代管式偵測與回應 (Managed Detection & Response)',
+                analogy: '外包資安保全公司',
+                desc: '企業不自建 SOC，而是付費請外部專家幫忙。解決「買了工具卻沒人看」的問題。',
+                memory: '🤝 「有人幫你 24 小時盯著資安」',
+                radar: [8, 8, 9, 10, 10] // Service based, high scores
+            }
+        ];
+
+        let currentChart = null;
+
+        function initSolutionTabs() {
+            const tabContainer = document.getElementById('solution-tabs');
+            
+            solutionData.forEach((sol, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-6 py-4 border-l-4 transition-all duration-200 flex items-center justify-between group focus:outline-none ${index === 0 ? 'bg-white border-brand-500 shadow-sm' : 'border-transparent hover:bg-slate-100'}`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${sol.icon}</span>
+                        <div>
+                            <span class="font-bold text-slate-700 group-hover:text-brand-700 block">${sol.name}</span>
+                            <span class="text-xs text-slate-400 hidden lg:block">${sol.id}</span>
+                        </div>
+                    </div>
+                    <span class="text-slate-300 group-hover:text-brand-500">➜</span>
+                `;
+                btn.onclick = () => loadSolution(index, btn);
+                tabContainer.appendChild(btn);
+            });
+
+            // Load first solution by default
+            loadSolution(0, tabContainer.firstElementChild);
+        }
+
+        function loadSolution(index, clickedBtn) {
+            const data = solutionData[index];
+            
+            // Update Tab Styles
+            const tabs = document.getElementById('solution-tabs').children;
+            Array.from(tabs).forEach(tab => {
+                tab.className = 'w-full text-left px-6 py-4 border-l-4 border-transparent transition-all duration-200 flex items-center justify-between group hover:bg-slate-100 focus:outline-none';
+            });
+            clickedBtn.className = 'w-full text-left px-6 py-4 border-l-4 border-brand-500 bg-white shadow-sm transition-all duration-200 flex items-center justify-between group focus:outline-none';
+
+            // Update Content
+            const contentDiv = document.getElementById('solution-detail');
+            contentDiv.innerHTML = `
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-xs font-bold tracking-wide">核心定義</span>
+                    <h3 class="text-2xl font-bold text-slate-900">${data.def}</h3>
+                </div>
+                
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-lg">
+                    <p class="font-bold text-amber-800 text-sm uppercase mb-1">白話比喻</p>
+                    <p class="text-lg text-slate-800 font-medium">「${data.analogy}」</p>
+                </div>
+
+                <p class="text-slate-600 mb-6 leading-relaxed text-lg">${data.desc}</p>
+                
+                <div class="flex items-center gap-2 text-slate-500 font-medium bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <span>💡 一句話記憶：</span>
+                    <span class="text-brand-700">${data.memory}</span>
+                </div>
+            `;
+
+            // Update Chart
+            updateRadarChart(data.radar, data.name);
+        }
+
+        function updateRadarChart(dataValues, label) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            currentChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['端點可視性', '網路可視性', '整合分析能力', '阻擋回應速度', '人力/專家服務'],
+                    datasets: [{
+                        label: label + ' 能力分析',
+                        data: dataValues,
+                        backgroundColor: 'rgba(14, 165, 233, 0.2)', // Brand-500 with opacity
+                        borderColor: '#0284c7', // Brand-600
+                        pointBackgroundColor: '#0284c7',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#0284c7',
+                        borderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#f1f5f9' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans TC', sans-serif" },
+                                color: '#64748b'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: { display: false, stepSize: 2 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: "'Noto Sans TC', sans-serif" },
+                            bodyFont: { family: "'Noto Sans TC', sans-serif" },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw + ' / 10';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // --- 3. Scenario Wizard Logic ---
+        const scenarios = {
+            'ot': {
+                icon: '🏭',
+                title: '製造業 / 工控環境 (OT)',
+                desc: '產線機台通常無法安裝 Agent 軟體，且對穩定性要求極高。',
+                result: 'NDR (網路偵測) + MDR'
+            },
+            'manpower': {
+                icon: '🆘',
+                title: 'IT 人力不足',
+                desc: '沒有專職資安團隊，無法處理半夜警報或分辨誤報。',
+                result: 'MDR (代管服務)'
+            },
+            'compliance': {
+                icon: '⚖️',
+                title: '高度合規需求',
+                desc: '金融或政府單位，需要完整的日誌保存與稽核報表。',
+                result: 'SIEM (日誌平台) + SOC'
+            },
+            'ransomware': {
+                icon: '🦠',
+                title: '防範勒索軟體',
+                desc: '最基礎且必要的防護，防止檔案被加密。',
+                result: 'EDR (端點防護) + 離線備份'
+            }
+        };
+
+        function updateRecommendation() {
+            const selected = document.querySelector('input[name="scenario"]:checked').value;
+            const data = scenarios[selected];
+            const card = document.getElementById('recommendation-card');
+            
+            // Animation reset
+            card.classList.remove('opacity-100', 'scale-100', 'blur-0');
+            card.classList.add('opacity-50', 'scale-95', 'blur-sm');
+
+            setTimeout(() => {
+                document.getElementById('rec-icon').textContent = data.icon;
+                document.getElementById('rec-title').textContent = data.title;
+                document.getElementById('rec-desc').textContent = data.desc;
+                document.getElementById('rec-result').textContent = data.result;
+                
+                // Animation show
+                card.classList.remove('opacity-50', 'scale-95', 'blur-sm');
+                card.classList.add('opacity-100', 'scale-100', 'blur-0');
+            }, 300);
+        }
+
+        // --- 4. FAQ Logic ---
+        function toggleFaq(btn) {
+            const content = btn.nextElementSibling;
+            const arrow = btn.querySelector('span:last-child');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+                btn.classList.add('bg-slate-50');
+            } else {
+                content.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+                btn.classList.remove('bg-slate-50');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSolutionTabs();
+        });
+
+    </script>
+</body>
+</html>
